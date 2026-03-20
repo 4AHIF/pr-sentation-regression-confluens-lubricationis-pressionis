@@ -1,0 +1,110 @@
+---
+title: "Evaluierungsmethoden: Gruppe 10"
+subtitle: "Statistische Gütemaße: Wann ist ein Modell wirklich 'gut'?"
+author: "Leonhard Fresacher & Christoph Fercher"
+date: today
+date-format: "DD.MM.YYYY"
+format:
+  revealjs:
+    slide-number: true
+    transition: slide
+    chalkboard: true
+    footer: "Gruppe 10: Evaluierung von Regressionsmodellen"
+---
+
+## Die zentrale Frage
+
+> "Alle Modelle sind falsch, aber einige sind nützlich." 
+> — *George Box*
+
+**Unser Ziel:** Messen, *wie* falsch ein Modell ist und ob es für die Praxis taugt.
+
+In der Regression vergleichen wir:
+- **Tatsächliche Werte ($y$):** Die Realität.
+- **Vorhergesagte Werte ($\hat{y}$):** Die Schätzung unseres Modells.
+
+---
+
+## 1. Mean Absolute Error (MAE)
+### Die intuitive Metrik
+
+$$MAE = \frac{1}{n} \sum_{i=1}^{n} |y_i - \hat{y}_i|$$
+
+- **Intuition:** Der durchschnittliche "Abstand" zur Wahrheit.
+- **Beispiel:** Vorhersage von Hauspreisen. Ein MAE von 10.000 bedeutet: Im Schnitt liegt das Modell 10.000 € daneben.
+- **Stärke:** Linearität. Ein Fehler von 20 ist genau doppelt so schlimm wie ein Fehler von 10.
+
+---
+
+## 2. Mean Squared Error (MSE)
+### Die "strenge" Metrik
+
+$$MSE = \frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2$$
+
+- **Warum Quadrieren?** 1. Verhindert, dass sich positive und negative Fehler aufheben.
+  2. **Bestraft große Ausreißer.**
+- **Problem:** Die Einheit ist unbrauchbar (z.B. $€^2$). 
+- **Lösung:** Oft nutzt man die Wurzel daraus (**RMSE**), um wieder zur ursprünglichen Einheit zu kommen.
+
+---
+
+## MAE vs. MSE: Der Ausreißer-Check
+
+Stellen wir uns zwei Szenarien vor:
+
+| Szenario | Fehlerwerte | MAE | MSE |
+|---|---|---|---|
+| A (Konstant) | 2, 2, 2, 2 | **2** | **4** |
+| B (Ein Ausreißer) | 0, 0, 0, 8 | **2** | **16** |
+
+- **Erkenntnis:** Obwohl der MAE gleich ist, warnt uns der MSE in Szenario B massiv vor dem einen großen Fehler.
+- **Anwendung:** Wählt MSE, wenn große Fehler katastrophale Folgen hätten (z.B. Statik, Medizin).
+
+---
+
+## 3. Bestimmtheitsmaß ($R^2$)
+### Die relative Einordnung
+
+$$R^2 = 1 - \frac{RSS}{TSS} = 1 - \frac{\text{Fehler des Modells}}{\text{Natürliche Varianz der Daten}}$$
+
+- **Bedeutung:** Wie viel besser sind wir als ein "Dummer Schätzer" (der einfach immer nur den Durchschnitt tippt)?
+- **Skala:** - $1.0$: Perfekt.
+  - $0.0$: Modell ist so nützlich wie ein Würfel.
+  - $< 0$: Modell ist schlechter als der Durchschnittswert!
+
+---
+
+## Achtung: Die $R^2$ Falle
+
+Ein hohes $R^2$ bedeutet nicht automatisch ein "gutes" Modell:
+
+1. **Overfitting:** Das Modell auswendig gelernt, kann aber keine neuen Daten vorhersagen.
+2. **Korrelation $\neq$ Kausalität:** Ein Modell kann $R^2=0.9$ haben, aber völlig unlogische Variablen nutzen (z.B. Störche vs. Geburtenrate).
+3. **Kontext:** In der Psychologie ist $R^2=0.3$ oft ein Erfolg, in der Physik wäre es ein Desaster.
+
+---
+
+## Wann ist ein Modell "gut"?
+
+Es gibt keinen universellen Schwellenwert. Es kommt auf den **Use Case** an:
+
+- **Finanzmarkt:** Selbst ein $R^2$ von 0.05 kann Millionen wert sein, wenn es einen kleinen Vorteil verschafft.
+- **Wettervorhersage:** Ein MAE von 1°C ist für morgen super, für in 3 Monaten unmöglich.
+- **Wichtig:** Vergleicht immer eure Metriken mit einem **Baseline-Modell** (z.B. dem Vorjahreswert).
+
+---
+
+## Unsere Rolle als Support-Gruppe
+
+Wir helfen euch bei der Interpretation eurer Ergebnisse:
+
+- **"Ist mein $R^2$ zu niedrig?"** $\rightarrow$ Wir analysieren das Rauschen in euren Daten.
+- **"Warum weichen MAE und RMSE so stark ab?"** $\rightarrow$ Wir suchen nach Ausreißern.
+- **"Welche Metrik soll ich in den Bericht schreiben?"** $\rightarrow$ Wir finden die ehrlichste Kennzahl für euer Projekt.
+
+---
+
+## Diskussion & Q&A {.center}
+
+**Fragen an euch:**
+Habt ihr in euren Daten eher Angst vor vielen kleinen Fehlern oder vor einzelnen, sehr großen Ausreißern?
