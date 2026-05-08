@@ -6,11 +6,11 @@
 <script src="evaluierungsmethoden_files/libs/quarto-html/tippy.umd.min.js"></script>
 <link href="evaluierungsmethoden_files/libs/quarto-html/tippy.css" rel="stylesheet">
 <link href="evaluierungsmethoden_files/libs/quarto-html/light-border.css" rel="stylesheet">
-<link href="evaluierungsmethoden_files/libs/quarto-html/quarto-syntax-highlighting-ed96de9b727972fe78a7b5d16c58bf87.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
+<link href="evaluierungsmethoden_files/libs/quarto-html/quarto-syntax-highlighting-8b4baf804e461d9b72633f0de59a0cac.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
   <meta name="generator" content="quarto-1.8.27">
 
   <meta name="author" content="Leonhard Fresacher &amp; Christoph Fercher">
-  <title>Evaluierungsmethoden: Gruppe 10</title>
+  <title>Evaluierungsmethoden in der Regression</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
@@ -33,8 +33,6 @@
   <link href="evaluierungsmethoden_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
   <link href="evaluierungsmethoden_files/libs/revealjs/plugin/reveal-menu/menu.css" rel="stylesheet">
   <link href="evaluierungsmethoden_files/libs/revealjs/plugin/reveal-menu/quarto-menu.css" rel="stylesheet">
-  <link href="evaluierungsmethoden_files/libs/revealjs/plugin/reveal-chalkboard/font-awesome/css/all.css" rel="stylesheet">
-  <link href="evaluierungsmethoden_files/libs/revealjs/plugin/reveal-chalkboard/style.css" rel="stylesheet">
   <link href="evaluierungsmethoden_files/libs/revealjs/plugin/quarto-support/footer.css" rel="stylesheet">
   <style type="text/css">
     .reveal div.sourceCode {
@@ -129,8 +127,7 @@
     <div class="slides">
 
 <section id="title-slide" class="quarto-title-block center">
-  <h1 class="title">Evaluierungsmethoden: Gruppe 10</h1>
-  <p class="subtitle">Statistische Gütemaße: Wann ist ein Modell wirklich ‘gut’?</p>
+  <h1 class="title">Evaluierungsmethoden in der Regression</h1>
 
 <div class="quarto-title-authors">
 <div class="quarto-title-author">
@@ -140,120 +137,159 @@ Leonhard Fresacher &amp; Christoph Fercher
 </div>
 </div>
 
-  <p class="date">13.03.2026</p>
 </section>
-<section id="die-zentrale-frage" class="slide level2">
-<h2>Die zentrale Frage</h2>
-<blockquote>
-<p>“Alle Modelle sind falsch, aber einige sind nützlich.” — <em>George Box</em></p>
-</blockquote>
-<p><strong>Unser Ziel:</strong> Messen, <em>wie</em> falsch ein Modell ist und ob es für die Praxis taugt.</p>
-<p>In der Regression vergleichen wir: - <strong>Tatsächliche Werte (<span class="math inline">\(y\)</span>):</strong> Die Realität. - <strong>Vorhergesagte Werte (<span class="math inline">\(\hat{y}\)</span>):</strong> Die Schätzung unseres Modells.</p>
+<section id="inhalt" class="slide level2">
+<h2>Inhalt</h2>
+<ol type="1">
+<li><strong>Motivation:</strong> Warum messen wir Fehler?</li>
+<li><strong>MAE:</strong> Die intuitive Metrik.</li>
+<li><strong>MSE &amp; RMSE:</strong> Der Fokus auf Ausreißer.</li>
+<li><strong>Bestimmtheitsmaß (<span class="math inline">\(R^2\)</span>):</strong> Die relative Güte.</li>
+<li><strong>Adjusted <span class="math inline">\(R^2\)</span> &amp; Overfitting.</strong></li>
+<li><strong>Zusammenfassung &amp; Use Case.</strong></li>
+</ol>
+</section>
+<section id="motivation-das-ziel-der-regression" class="slide level2">
+<h2>1. Motivation: Das Ziel der Regression</h2>
+<p>Wir versuchen eine Funktion <span class="math inline">\(f(x)\)</span> zu finden, die den Zusammenhang zwischen Features und Zielwert <span class="math inline">\(y\)</span> beschreibt.</p>
+<p><strong>Das Problem:</strong> Kein Modell ist perfekt. Es bleibt immer ein Fehler <span class="math inline">\(\epsilon\)</span>: <span class="math display">\[y_i = \hat{y}_i + \epsilon_i\]</span></p>
+<p><strong>Die Kernfrage:</strong> Wie aggregieren wir die Fehler aller Datenpunkte (<span class="math inline">\(n\)</span>), um eine einzige, aussagekräftige Zahl zu erhalten?</p>
 </section>
 <section id="mean-absolute-error-mae" class="slide level2">
-<h2>1. Mean Absolute Error (MAE)</h2>
-<h3 id="die-intuitive-metrik">Die intuitive Metrik</h3>
-<p><span class="math display">\[MAE = \frac{1}{n} \sum_{i=1}^{n} |y_i - \hat{y}_i|\]</span></p>
+<h2>2. Mean Absolute Error (MAE)</h2>
+<p><strong>Mathematische Definition:</strong> <span class="math display">\[MAE = \frac{1}{n} \sum_{i=1}^{n} |y_i - \hat{y}_i|\]</span></p>
 <ul>
-<li><strong>Intuition:</strong> Der durchschnittliche “Abstand” zur Wahrheit.</li>
-<li><strong>Beispiel:</strong> Vorhersage von Hauspreisen. Ein MAE von 10.000 bedeutet: Im Schnitt liegt das Modell 10.000 € daneben.</li>
-<li><strong>Stärke:</strong> Linearität. Ein Fehler von 20 ist genau doppelt so schlimm wie ein Fehler von 10.</li>
+<li><strong>Was passiert hier?</strong> Wir nehmen den Betrag jeder Abweichung und bilden den Durchschnitt.</li>
+<li><strong>Vorteil:</strong> Er ist “robust”. Ein einzelner riesiger Fehler zieht den Schnitt nicht extrem nach oben.</li>
+<li><strong>Intuition:</strong> “Im Durchschnitt liegt unsere Schätzung um <span class="math inline">\(X\)</span> Einheiten daneben.”</li>
 </ul>
 </section>
 <section id="mean-squared-error-mse" class="slide level2">
-<h2>2. Mean Squared Error (MSE)</h2>
-<h3 id="die-strenge-metrik">Die “strenge” Metrik</h3>
-<p><span class="math display">\[MSE = \frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2\]</span></p>
+<h2>3. Mean Squared Error (MSE)</h2>
+<p><strong>Mathematische Definition:</strong> <span class="math display">\[MSE = \frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2\]</span></p>
 <ul>
-<li><strong>Warum Quadrieren?</strong> 1. Verhindert, dass sich positive und negative Fehler aufheben.
+<li><strong>Warum quadrieren?</strong> 1. Fehler werden positiv (negative heben positive nicht auf).
 <ol start="2" type="1">
-<li><strong>Bestraft große Ausreißer.</strong></li>
+<li><strong>Große Fehler werden überproportional bestraft.</strong></li>
 </ol></li>
-<li><strong>Problem:</strong> Die Einheit ist unbrauchbar (z.B. <span class="math inline">\(€^2\)</span>).</li>
-<li><strong>Lösung:</strong> Oft nutzt man die Wurzel daraus (<strong>RMSE</strong>), um wieder zur ursprünglichen Einheit zu kommen.</li>
+<li><strong>Problem:</strong> Die Einheit ist “quadriert” (z. B. <span class="math inline">\(Euro^2\)</span>). Nicht intuitiv!</li>
 </ul>
 </section>
-<section id="mae-vs.-mse-der-ausreißer-check" class="slide level2">
-<h2>MAE vs.&nbsp;MSE: Der Ausreißer-Check</h2>
-<p>Stellen wir uns zwei Szenarien vor:</p>
-<table class="caption-top">
+<section id="root-mean-squared-error-rmse" class="slide level2">
+<h2>4. Root Mean Squared Error (RMSE)</h2>
+<p><strong>Die Lösung für das Einheitenproblem:</strong> <span class="math display">\[RMSE = \sqrt{MSE} = \sqrt{\frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2}\]</span></p>
+<ul>
+<li><strong>Eigenschaft:</strong> Gleiche Einheit wie der Zielwert (<span class="math inline">\(y\)</span>).</li>
+<li><strong>Vergleich zum MAE:</strong> Der RMSE ist immer <span class="math inline">\(\ge\)</span> MAE.</li>
+<li><strong>Bedeutung:</strong> Wenn der RMSE deutlich höher ist als der MAE, haben wir einige sehr große Ausreißer in den Vorhersagen.</li>
+</ul>
+</section>
+<section id="vergleich-mae-vs.-mse-beispiel" class="slide level2">
+<h2>5. Vergleich: MAE vs.&nbsp;MSE (Beispiel)</h2>
+<table class="caption-top" style="width:100%;">
+<colgroup>
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+</colgroup>
 <thead>
 <tr class="header">
-<th>Szenario</th>
-<th>Fehlerwerte</th>
-<th>MAE</th>
-<th>MSE</th>
+<th>Beobachtung</th>
+<th>Wahrer Wert</th>
+<th>Vorhersage</th>
+<th>Fehler</th>
+<th></th>
+<th>Abs. Fehler</th>
+<th>Quad. Fehler</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td>A (Konstant)</td>
-<td>2, 2, 2, 2</td>
-<td><strong>2</strong></td>
-<td><strong>4</strong></td>
+<td>Haus A</td>
+<td>300k</td>
+<td>310k</td>
+<td>10</td>
+<td></td>
+<td>10</td>
+<td>100</td>
 </tr>
 <tr class="even">
-<td>B (Ein Ausreißer)</td>
-<td>0, 0, 0, 8</td>
-<td><strong>2</strong></td>
-<td><strong>16</strong></td>
+<td>Haus B</td>
+<td>200k</td>
+<td>190k</td>
+<td>-10</td>
+<td></td>
+<td>10</td>
+<td>100</td>
+</tr>
+<tr class="odd">
+<td>Haus C</td>
+<td>500k</td>
+<td>550k</td>
+<td>50</td>
+<td></td>
+<td>50</td>
+<td>2500</td>
+</tr>
+<tr class="even">
+<td><strong>Summe</strong></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td><strong>70</strong></td>
+<td><strong>2700</strong></td>
+</tr>
+<tr class="odd">
+<td><strong>Durchschnitt</strong></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td><strong>MAE: 23.3</strong></td>
+<td><strong>MSE: 900</strong></td>
 </tr>
 </tbody>
 </table>
+<p><strong>RMSE = <span class="math inline">\(\sqrt{900}\)</span> = 30.</strong></p>
+</section>
+<section id="das-bestimmtheitsmaß-r2" class="slide level2">
+<h2>6. Das Bestimmtheitsmaß (<span class="math inline">\(R^2\)</span>)</h2>
+<p>Bisher waren Fehlermaße absolut. Wir brauchen eine <strong>relative</strong> Kennzahl.</p>
+<p><span class="math display">\[R^2 = 1 - \frac{\text{Nicht erklärte Varianz (RSS)}}{\text{Gesamtvarianz der Daten (TSS)}}\]</span></p>
 <ul>
-<li><strong>Erkenntnis:</strong> Obwohl der MAE gleich ist, warnt uns der MSE in Szenario B massiv vor dem einen großen Fehler.</li>
-<li><strong>Anwendung:</strong> Wählt MSE, wenn große Fehler katastrophale Folgen hätten (z.B. Statik, Medizin).</li>
+<li><strong>Skala:</strong> 0 bis 1 (meistens).</li>
+<li><strong>0.70 bedeutet:</strong> 70% der Streuung der Daten können durch unser Modell erklärt werden.</li>
+<li><strong>Baseline:</strong> Ein <span class="math inline">\(R^2\)</span> von 0 entspräche einem “Modell”, das immer nur den Mittelwert aller <span class="math inline">\(y\)</span> vorhersagt.</li>
 </ul>
 </section>
-<section id="bestimmtheitsmaß-r2" class="slide level2">
-<h2>3. Bestimmtheitsmaß (<span class="math inline">\(R^2\)</span>)</h2>
-<h3 id="die-relative-einordnung">Die relative Einordnung</h3>
-<p><span class="math display">\[R^2 = 1 - \frac{RSS}{TSS} = 1 - \frac{\text{Fehler des Modells}}{\text{Natürliche Varianz der Daten}}\]</span></p>
+<section id="die-gefahr-adjusted-r2" class="slide level2">
+<h2>7. Die Gefahr: “Adjusted <span class="math inline">\(R^2\)</span>”</h2>
+<p>Ein bekanntes Problem von <span class="math inline">\(R^2\)</span>: Es wird <strong>nie kleiner</strong>, wenn man mehr Variablen hinzufügt (selbst wenn diese nur Rauschen sind).</p>
+<p><strong>Adjusted <span class="math inline">\(R^2\)</span>:</strong> Bestraft das Hinzufügen von unnötigen Features.</p>
 <ul>
-<li><strong>Bedeutung:</strong> Wie viel besser sind wir als ein “Dummer Schätzer” (der einfach immer nur den Durchschnitt tippt)?</li>
-<li><strong>Skala:</strong> - <span class="math inline">\(1.0\)</span>: Perfekt.
-<ul>
-<li><span class="math inline">\(0.0\)</span>: Modell ist so nützlich wie ein Würfel.</li>
-<li><span class="math inline">\(&lt; 0\)</span>: Modell ist schlechter als der Durchschnittswert!</li>
-</ul></li>
+<li>Es steigt nur, wenn das neue Feature die Vorhersagekraft signifikant verbessert.</li>
+<li>Wichtig für die Modellselektion.</li>
 </ul>
 </section>
-<section id="achtung-die-r2-falle" class="slide level2">
-<h2>Achtung: Die <span class="math inline">\(R^2\)</span> Falle</h2>
-<p>Ein hohes <span class="math inline">\(R^2\)</span> bedeutet nicht automatisch ein “gutes” Modell:</p>
+<section id="zusammenfassung" class="slide level2">
+<h2>8. Zusammenfassung</h2>
+<p>Welche Metrik wann nutzen?</p>
 <ol type="1">
-<li><strong>Overfitting:</strong> Das Modell auswendig gelernt, kann aber keine neuen Daten vorhersagen.</li>
-<li><strong>Korrelation <span class="math inline">\(\neq\)</span> Kausalität:</strong> Ein Modell kann <span class="math inline">\(R^2=0.9\)</span> haben, aber völlig unlogische Variablen nutzen (z.B. Störche vs.&nbsp;Geburtenrate).</li>
-<li><strong>Kontext:</strong> In der Psychologie ist <span class="math inline">\(R^2=0.3\)</span> oft ein Erfolg, in der Physik wäre es ein Desaster.</li>
+<li><strong>MAE:</strong> Wenn Sie dem Management erklären wollen, wie hoch der Fehler im Alltag ist.</li>
+<li><strong>RMSE:</strong> Wenn große Fehlprognosen das Unternehmen teuer zu stehen kommen.</li>
+<li><strong><span class="math inline">\(R^2\)</span>:</strong> Um verschiedene Modelle (z.B. Lineare Regression vs.&nbsp;Random Forest) grob zu vergleichen.</li>
 </ol>
-</section>
-<section id="wann-ist-ein-modell-gut" class="slide level2">
-<h2>Wann ist ein Modell “gut”?</h2>
-<p>Es gibt keinen universellen Schwellenwert. Es kommt auf den <strong>Use Case</strong> an:</p>
-<ul>
-<li><strong>Finanzmarkt:</strong> Selbst ein <span class="math inline">\(R^2\)</span> von 0.05 kann Millionen wert sein, wenn es einen kleinen Vorteil verschafft.</li>
-<li><strong>Wettervorhersage:</strong> Ein MAE von 1°C ist für morgen super, für in 3 Monaten unmöglich.</li>
-<li><strong>Wichtig:</strong> Vergleicht immer eure Metriken mit einem <strong>Baseline-Modell</strong> (z.B. dem Vorjahreswert).</li>
-</ul>
-</section>
-<section id="unsere-rolle-als-support-gruppe" class="slide level2">
-<h2>Unsere Rolle als Support-Gruppe</h2>
-<p>Wir helfen euch bei der Interpretation eurer Ergebnisse:</p>
-<ul>
-<li><strong>“Ist mein <span class="math inline">\(R^2\)</span> zu niedrig?”</strong> <span class="math inline">\(\rightarrow\)</span> Wir analysieren das Rauschen in euren Daten.</li>
-<li><strong>“Warum weichen MAE und RMSE so stark ab?”</strong> <span class="math inline">\(\rightarrow\)</span> Wir suchen nach Ausreißern.</li>
-<li><strong>“Welche Metrik soll ich in den Bericht schreiben?”</strong> <span class="math inline">\(\rightarrow\)</span> Wir finden die ehrlichste Kennzahl für euer Projekt.</li>
-</ul>
-</section>
-<section id="diskussion-qa" class="slide level2 center">
-<h2>Diskussion &amp; Q&amp;A</h2>
-<p><strong>Fragen an euch:</strong> Habt ihr in euren Daten eher Angst vor vielen kleinen Fehlern oder vor einzelnen, sehr großen Ausreißern?</p>
 
 </section>
     </div>
   <div class="quarto-auto-generated-content" style="display: none;">
 <div class="footer footer-default">
-<p>Gruppe 10: Evaluierung von Regressionsmodellen</p>
+<p>Evaluierungsmethoden - Fresacher &amp; Fercher</p>
 </div>
 </div></div>
 
@@ -264,7 +300,6 @@ Leonhard Fresacher &amp; Christoph Fercher
   <script src="evaluierungsmethoden_files/libs/revealjs/plugin/pdf-export/pdfexport.js"></script>
   <script src="evaluierungsmethoden_files/libs/revealjs/plugin/reveal-menu/menu.js"></script>
   <script src="evaluierungsmethoden_files/libs/revealjs/plugin/reveal-menu/quarto-menu.js"></script>
-  <script src="evaluierungsmethoden_files/libs/revealjs/plugin/reveal-chalkboard/plugin.js"></script>
   <script src="evaluierungsmethoden_files/libs/revealjs/plugin/quarto-support/support.js"></script>
   
 
@@ -286,8 +321,7 @@ Leonhard Fresacher &amp; Christoph Fercher
 'autoAnimateDuration': 1,
 'autoAnimateUnmatched': true,
 'jumpToSlide': true,
-'menu': {"side":"left","useTextContentForMissingTitles":true,"markers":false,"loadIcons":false,"custom":[{"title":"Tools","icon":"<i class=\"fas fa-gear\"></i>","content":"<ul class=\"slide-menu-items\">\n<li class=\"slide-tool-item active\" data-item=\"0\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.fullscreen(event)\"><kbd>f</kbd> Fullscreen</a></li>\n<li class=\"slide-tool-item\" data-item=\"1\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.speakerMode(event)\"><kbd>s</kbd> Speaker View</a></li>\n<li class=\"slide-tool-item\" data-item=\"2\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.overview(event)\"><kbd>o</kbd> Slide Overview</a></li>\n<li class=\"slide-tool-item\" data-item=\"3\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.togglePdfExport(event)\"><kbd>e</kbd> PDF Export Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"4\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.toggleScrollView(event)\"><kbd>r</kbd> Scroll View Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"5\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.toggleChalkboard(event)\"><kbd>b</kbd> Toggle Chalkboard</a></li>\n<li class=\"slide-tool-item\" data-item=\"6\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.toggleNotesCanvas(event)\"><kbd>c</kbd> Toggle Notes Canvas</a></li>\n<li class=\"slide-tool-item\" data-item=\"7\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.downloadDrawings(event)\"><kbd>d</kbd> Download Drawings</a></li>\n<li class=\"slide-tool-item\" data-item=\"8\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.keyboardHelp(event)\"><kbd>?</kbd> Keyboard Help</a></li>\n</ul>"}],"openButton":true},
-'chalkboard': {"buttons":true},
+'menu': {"side":"left","useTextContentForMissingTitles":true,"markers":false,"loadIcons":false,"custom":[{"title":"Tools","icon":"<i class=\"fas fa-gear\"></i>","content":"<ul class=\"slide-menu-items\">\n<li class=\"slide-tool-item active\" data-item=\"0\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.fullscreen(event)\"><kbd>f</kbd> Fullscreen</a></li>\n<li class=\"slide-tool-item\" data-item=\"1\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.speakerMode(event)\"><kbd>s</kbd> Speaker View</a></li>\n<li class=\"slide-tool-item\" data-item=\"2\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.overview(event)\"><kbd>o</kbd> Slide Overview</a></li>\n<li class=\"slide-tool-item\" data-item=\"3\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.togglePdfExport(event)\"><kbd>e</kbd> PDF Export Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"4\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.toggleScrollView(event)\"><kbd>r</kbd> Scroll View Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"5\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.keyboardHelp(event)\"><kbd>?</kbd> Keyboard Help</a></li>\n</ul>"}],"openButton":true},
 'smaller': false,
  
         // Display controls in the bottom right corner
@@ -433,9 +467,9 @@ Leonhard Fresacher &amp; Christoph Fercher
         // The "normal" size of the presentation, aspect ratio will be preserved
         // when the presentation is scaled to fit different resolutions. Can be
         // specified using percentage units.
-        width: 1050,
+        width: 1600,
 
-        height: 700,
+        height: 900,
 
         // Factor of the display size that should remain empty around the content
         margin: 0.1,
@@ -458,7 +492,7 @@ Leonhard Fresacher &amp; Christoph Fercher
         },
 
         // reveal.js plugins
-        plugins: [QuartoLineHighlight, PdfExport, RevealMenu, RevealChalkboard, QuartoSupport,
+        plugins: [QuartoLineHighlight, PdfExport, RevealMenu, QuartoSupport,
 
           RevealMath,
           RevealNotes,

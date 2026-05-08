@@ -1,110 +1,115 @@
 ---
-title: "Evaluierungsmethoden: Gruppe 10"
-subtitle: "Statistische Gütemaße: Wann ist ein Modell wirklich 'gut'?"
+title: "Evaluierungsmethoden in der Regression"
 author: "Leonhard Fresacher & Christoph Fercher"
-date: today
-date-format: "DD.MM.YYYY"
 format:
   revealjs:
+    width: 1600
+    height: 900
     slide-number: true
     transition: slide
-    chalkboard: true
-    footer: "Gruppe 10: Evaluierung von Regressionsmodellen"
+    footer: "Evaluierungsmethoden - Fresacher & Fercher"
+    highlight-style: github
 ---
 
-## Die zentrale Frage
+## Inhalt
 
-> "Alle Modelle sind falsch, aber einige sind nützlich." 
-> — *George Box*
-
-**Unser Ziel:** Messen, *wie* falsch ein Modell ist und ob es für die Praxis taugt.
-
-In der Regression vergleichen wir:
-- **Tatsächliche Werte ($y$):** Die Realität.
-- **Vorhergesagte Werte ($\hat{y}$):** Die Schätzung unseres Modells.
+1. **Motivation:** Warum messen wir Fehler?
+2. **MAE:** Die intuitive Metrik.
+3. **MSE & RMSE:** Der Fokus auf Ausreißer.
+4. **Bestimmtheitsmaß ($R^2$):** Die relative Güte.
+5. **Adjusted $R^2$ & Overfitting.**
+6. **Zusammenfassung & Use Case.**
 
 ---
 
-## 1. Mean Absolute Error (MAE)
-### Die intuitive Metrik
+## 1. Motivation: Das Ziel der Regression
 
+Wir versuchen eine Funktion $f(x)$ zu finden, die den Zusammenhang zwischen Features und Zielwert $y$ beschreibt.
+
+**Das Problem:** Kein Modell ist perfekt. Es bleibt immer ein Fehler $\epsilon$:
+$$y_i = \hat{y}_i + \epsilon_i$$
+
+**Die Kernfrage:**
+Wie aggregieren wir die Fehler aller Datenpunkte ($n$), um eine einzige, aussagekräftige Zahl zu erhalten?
+
+---
+
+## 2. Mean Absolute Error (MAE)
+
+**Mathematische Definition:**
 $$MAE = \frac{1}{n} \sum_{i=1}^{n} |y_i - \hat{y}_i|$$
 
-- **Intuition:** Der durchschnittliche "Abstand" zur Wahrheit.
-- **Beispiel:** Vorhersage von Hauspreisen. Ein MAE von 10.000 bedeutet: Im Schnitt liegt das Modell 10.000 € daneben.
-- **Stärke:** Linearität. Ein Fehler von 20 ist genau doppelt so schlimm wie ein Fehler von 10.
+* **Was passiert hier?** Wir nehmen den Betrag jeder Abweichung und bilden den Durchschnitt.
+* **Vorteil:** Er ist "robust". Ein einzelner riesiger Fehler zieht den Schnitt nicht extrem nach oben.
+* **Intuition:** "Im Durchschnitt liegt unsere Schätzung um $X$ Einheiten daneben."
 
 ---
 
-## 2. Mean Squared Error (MSE)
-### Die "strenge" Metrik
+## 3. Mean Squared Error (MSE)
 
+**Mathematische Definition:**
 $$MSE = \frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2$$
 
-- **Warum Quadrieren?** 1. Verhindert, dass sich positive und negative Fehler aufheben.
-  2. **Bestraft große Ausreißer.**
-- **Problem:** Die Einheit ist unbrauchbar (z.B. $€^2$). 
-- **Lösung:** Oft nutzt man die Wurzel daraus (**RMSE**), um wieder zur ursprünglichen Einheit zu kommen.
+* **Warum quadrieren?** 1. Fehler werden positiv (negative heben positive nicht auf).
+    2. **Große Fehler werden überproportional bestraft.**
+* **Problem:** Die Einheit ist "quadriert" (z. B. $Euro^2$). Nicht intuitiv!
 
 ---
 
-## MAE vs. MSE: Der Ausreißer-Check
+## 4. Root Mean Squared Error (RMSE)
 
-Stellen wir uns zwei Szenarien vor:
+**Die Lösung für das Einheitenproblem:**
+$$RMSE = \sqrt{MSE} = \sqrt{\frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2}$$
 
-| Szenario | Fehlerwerte | MAE | MSE |
-|---|---|---|---|
-| A (Konstant) | 2, 2, 2, 2 | **2** | **4** |
-| B (Ein Ausreißer) | 0, 0, 0, 8 | **2** | **16** |
-
-- **Erkenntnis:** Obwohl der MAE gleich ist, warnt uns der MSE in Szenario B massiv vor dem einen großen Fehler.
-- **Anwendung:** Wählt MSE, wenn große Fehler katastrophale Folgen hätten (z.B. Statik, Medizin).
+* **Eigenschaft:** Gleiche Einheit wie der Zielwert ($y$).
+* **Vergleich zum MAE:** Der RMSE ist immer $\ge$ MAE.
+* **Bedeutung:** Wenn der RMSE deutlich höher ist als der MAE, haben wir einige sehr große Ausreißer in den Vorhersagen.
 
 ---
 
-## 3. Bestimmtheitsmaß ($R^2$)
-### Die relative Einordnung
+## 5. Vergleich: MAE vs. MSE (Beispiel)
 
-$$R^2 = 1 - \frac{RSS}{TSS} = 1 - \frac{\text{Fehler des Modells}}{\text{Natürliche Varianz der Daten}}$$
+| Beobachtung | Wahrer Wert | Vorhersage | Fehler | | Abs. Fehler | Quad. Fehler |
+|---|---|---|---|---|---|---|
+| Haus A | 300k | 310k | 10 | | 10 | 100 |
+| Haus B | 200k | 190k | -10 | | 10 | 100 |
+| Haus C | 500k | 550k | 50 | | 50 | 2500 |
+| **Summe** | | | | | **70** | **2700** |
+| **Durchschnitt** | | | | | **MAE: 23.3** | **MSE: 900** |
 
-- **Bedeutung:** Wie viel besser sind wir als ein "Dummer Schätzer" (der einfach immer nur den Durchschnitt tippt)?
-- **Skala:** - $1.0$: Perfekt.
-  - $0.0$: Modell ist so nützlich wie ein Würfel.
-  - $< 0$: Modell ist schlechter als der Durchschnittswert!
-
----
-
-## Achtung: Die $R^2$ Falle
-
-Ein hohes $R^2$ bedeutet nicht automatisch ein "gutes" Modell:
-
-1. **Overfitting:** Das Modell auswendig gelernt, kann aber keine neuen Daten vorhersagen.
-2. **Korrelation $\neq$ Kausalität:** Ein Modell kann $R^2=0.9$ haben, aber völlig unlogische Variablen nutzen (z.B. Störche vs. Geburtenrate).
-3. **Kontext:** In der Psychologie ist $R^2=0.3$ oft ein Erfolg, in der Physik wäre es ein Desaster.
+**RMSE = $\sqrt{900}$ = 30.**
 
 ---
 
-## Wann ist ein Modell "gut"?
+## 6. Das Bestimmtheitsmaß ($R^2$)
 
-Es gibt keinen universellen Schwellenwert. Es kommt auf den **Use Case** an:
+Bisher waren Fehlermaße absolut. Wir brauchen eine **relative** Kennzahl.
 
-- **Finanzmarkt:** Selbst ein $R^2$ von 0.05 kann Millionen wert sein, wenn es einen kleinen Vorteil verschafft.
-- **Wettervorhersage:** Ein MAE von 1°C ist für morgen super, für in 3 Monaten unmöglich.
-- **Wichtig:** Vergleicht immer eure Metriken mit einem **Baseline-Modell** (z.B. dem Vorjahreswert).
+$$R^2 = 1 - \frac{\text{Nicht erklärte Varianz (RSS)}}{\text{Gesamtvarianz der Daten (TSS)}}$$
 
----
-
-## Unsere Rolle als Support-Gruppe
-
-Wir helfen euch bei der Interpretation eurer Ergebnisse:
-
-- **"Ist mein $R^2$ zu niedrig?"** $\rightarrow$ Wir analysieren das Rauschen in euren Daten.
-- **"Warum weichen MAE und RMSE so stark ab?"** $\rightarrow$ Wir suchen nach Ausreißern.
-- **"Welche Metrik soll ich in den Bericht schreiben?"** $\rightarrow$ Wir finden die ehrlichste Kennzahl für euer Projekt.
+* **Skala:** 0 bis 1 (meistens).
+* **0.70 bedeutet:** 70% der Streuung der Daten können durch unser Modell erklärt werden.
+* **Baseline:** Ein $R^2$ von 0 entspräche einem "Modell", das immer nur den Mittelwert aller $y$ vorhersagt.
 
 ---
 
-## Diskussion & Q&A {.center}
+## 7. Die Gefahr: "Adjusted $R^2$"
 
-**Fragen an euch:**
-Habt ihr in euren Daten eher Angst vor vielen kleinen Fehlern oder vor einzelnen, sehr großen Ausreißern?
+Ein bekanntes Problem von $R^2$: Es wird **nie kleiner**, wenn man mehr Variablen hinzufügt (selbst wenn diese nur Rauschen sind).
+
+**Adjusted $R^2$:**
+Bestraft das Hinzufügen von unnötigen Features.
+
+* Es steigt nur, wenn das neue Feature die Vorhersagekraft signifikant verbessert.
+* Wichtig für die Modellselektion.
+
+---
+
+## 8. Zusammenfassung
+
+Welche Metrik wann nutzen?
+
+1. **MAE:** Wenn Sie dem Management erklären wollen, wie hoch der Fehler im Alltag ist.
+2. **RMSE:** Wenn große Fehlprognosen das Unternehmen teuer zu stehen kommen.
+3. **$R^2$:** Um verschiedene Modelle (z.B. Lineare Regression vs. Random Forest) grob zu vergleichen.
+
